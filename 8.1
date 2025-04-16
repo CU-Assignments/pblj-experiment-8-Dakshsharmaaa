@@ -1,0 +1,73 @@
+Sample Employee Table (employees) 
+CREATE TABLE employees ( 
+id INT PRIMARY KEY, 
+name VARCHAR(100), 
+department VARCHAR(100), 
+salary DECIMAL(10,2) 
+); 
+INSERT INTO employees (id, name, department, salary) VALUES 
+(1, 'Alice Johnson', 'HR', 55000.00), 
+(2, 'Bob Smith', 'Engineering', 72000.00), 
+(3, 'Charlie Brown', 'Marketing', 48000.00); 
+EmployeeServlet.java 
+package com.example; 
+import jakarta.servlet.ServletException; 
+import jakarta.servlet.annotation.WebServlet; 
+import jakarta.servlet.http.*; 
+import java.io.IOException; 
+import java.io.PrintWriter; 
+import java.sql.*; 
+@WebServlet("/employees") 
+public class EmployeeServlet extends HttpServlet { 
+private static final String JDBC_URL = "jdbc:mysql://localhost:3306/your_database"; 
+private static final String DB_USER = "your_user"; 
+private static final String DB_PASSWORD = "your_password"; 
+protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+throws ServletException, IOException { 
+String searchId = request.getParameter("searchId"); 
+response.setContentType("text/html"); 
+PrintWriter out = response.getWriter(); 
+out.println("<html><head><title>Employee List</title></head><body>"); 
+out.println("<h2>Employee List</h2>"); 
+try (Connection conn = DriverManager.getConnection(JDBC_URL, DB_USER, DB_PASSWORD)) { 
+Statement stmt = conn.createStatement(); 
+ResultSet rs = stmt.executeQuery("SELECT * FROM employees"); 
+out.println("<table border='1'><tr><th>ID</th><th>Name</th><th>Department</th><th>Salary</th></tr>"); 
+while (rs.next()) { 
+out.printf("<tr><td>%d</td><td>%s</td><td>%s</td><td>%.2f</td></tr>", 
+rs.getInt("id"), 
+rs.getString("name"), 
+         DEPARTMENT OF    
+    
+         COMPUTER SCIENCE  & ENGINEERING    
+                        rs.getString("department"), 
+                        rs.getDouble("salary")); 
+            } 
+            out.println("<h3>Search Employee by ID</h3>"); 
+            out.println("<form method='get'>"); 
+            out.println("Employee ID: <input type='text' name='searchId'>"); 
+            out.println("<input type='submit' value='Search'>"); 
+            out.println("</form>"); 
+            if (searchId != null && !searchId.trim().isEmpty()) { 
+                PreparedStatement ps = conn.prepareStatement("SELECT * FROM employees WHERE id = ?"); 
+                ps.setInt(1, Integer.parseInt(searchId)); 
+                ResultSet result = ps.executeQuery(); 
+                if (result.next()) { 
+                    out.println("<h3>Search Result:</h3>"); 
+                    out.printf("<p>ID: %d<br>Name: %s<br>Department: %s<br>Salary: %.2f</p>", 
+                            result.getInt("id"), 
+                            result.getString("name"), 
+                            result.getString("department"), 
+                            result.getDouble("salary")); 
+                } else { 
+                    out.println("<p style='color:red;'>No employee found with ID " + searchId + "</p>"); 
+                } 
+            } 
+        } catch (Exception e) { 
+            out.println("<p style='color:red;'>Database error: " + e.getMessage() + "</p>"); 
+        } 
+        out.println("</body></html>"); 
+    } 
+} 
+index.jsp (Redirect to Servlet) 
+<% response.sendRedirect("employees"); %>
